@@ -39,7 +39,12 @@ export async function prep(pk, contractId, method, args = []) {
   return rpcServer.prepareTransaction(tx);
 }
 
+// Cache TTLs: pool data is cheap to re-fetch (10s), balances change after swaps (12s),
+// swap counter changes less critically (8s)
 const STROOPS = 10_000_000;
+const TTL_POOL = 10_000;
+const TTL_BAL = 12_000;
+const TTL_SWAPS = 8_000;
 
 export async function getPool(pk) {
   const key = `pool:${pk}`;
@@ -53,7 +58,7 @@ export async function getPool(pk) {
     rate: Number(raw.token_reserve) / Number(raw.xlm_reserve),
     tokenContract: raw.token_contract,
   };
-  cache.set(key, pool, 10_000);
+  cache.set(key, pool, TTL_POOL);
   return pool;
 }
 
@@ -70,7 +75,7 @@ export async function getTotalSwaps(pk) {
 
   const raw = await sim(pk, CFG.CONTRACT_SWAP, 'total_swaps', []);
   const val = Number(raw);
-  cache.set(key, val, 8_000);
+  cache.set(key, val, TTL_SWAPS);
   return val;
 }
 
@@ -82,7 +87,7 @@ export async function getTokenBalance(pk) {
   const args = [Address.fromString(pk).toScVal()];
   const raw = await sim(pk, CFG.CONTRACT_TOKEN, 'balance', args);
   const val = Number(raw) / STROOPS;
-  cache.set(key, val, 12_000);
+  cache.set(key, val, TTL_BAL);
   return val;
 }
 
@@ -96,7 +101,7 @@ export async function getXLMBalance(pk) {
   const data = await resp.json();
   const native = data.balances.find((b) => b.asset_type === 'native');
   const val = native ? parseFloat(native.balance) : 0;
-  cache.set(key, val, 12_000);
+  cache.set(key, val, TTL_BAL);
   return val;
 }
 

@@ -24,6 +24,7 @@ export const TX = {
 };
 
 const MAX_EVENTS = 10;
+const REFRESH_INTERVAL_MS = 15_000;
 
 export function useSwap(pk, sign) {
   const [pool, setPool] = useState(null);
@@ -76,7 +77,7 @@ export function useSwap(pk, sign) {
       return;
     }
     refresh();
-    intervalRef.current = setInterval(() => refresh(), 15_000);
+    intervalRef.current = setInterval(() => refresh(), REFRESH_INTERVAL_MS);
     return () => clearInterval(intervalRef.current);
   }, [pk, refresh]);
 

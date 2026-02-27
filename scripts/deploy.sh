@@ -2,7 +2,7 @@
 set -e
 
 NETWORK="testnet"
-ADMIN_KEYPAIR="${ADMIN_SECRET:?Need ADMIN_SECRET env var}"
+ADMIN_SECRET="${ADMIN_SECRET:?Need ADMIN_SECRET env var}"
 
 echo "==> Building token contract..."
 cd contract/token
@@ -12,14 +12,14 @@ TOKEN_WASM="target/wasm32-unknown-unknown/release/token.wasm"
 echo "==> Deploying token contract..."
 TOKEN_ID=$(stellar contract deploy \
   --wasm "$TOKEN_WASM" \
-  --source "$ADMIN_KEYPAIR" \
+  --source "$ADMIN_SECRET" \
   --network "$NETWORK")
 echo "Token contract deployed: $TOKEN_ID"
 
 echo "==> Initializing token contract..."
 stellar contract invoke \
   --id "$TOKEN_ID" \
-  --source "$ADMIN_KEYPAIR" \
+  --source "$ADMIN_SECRET" \
   --network "$NETWORK" \
   -- init \
   --admin "$(stellar keys address admin)" \
@@ -35,14 +35,14 @@ SWAP_WASM="target/wasm32-unknown-unknown/release/swap.wasm"
 echo "==> Deploying swap contract..."
 SWAP_ID=$(stellar contract deploy \
   --wasm "$SWAP_WASM" \
-  --source "$ADMIN_KEYPAIR" \
+  --source "$ADMIN_SECRET" \
   --network "$NETWORK")
 echo "Swap contract deployed: $SWAP_ID"
 
 echo "==> Initializing swap contract..."
 stellar contract invoke \
   --id "$SWAP_ID" \
-  --source "$ADMIN_KEYPAIR" \
+  --source "$ADMIN_SECRET" \
   --network "$NETWORK" \
   -- init \
   --admin "$(stellar keys address admin)" \
